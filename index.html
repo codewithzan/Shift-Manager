@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>バイト管理 — Shift Manager</title>
+<script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@7.4.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://cdn.jsdelivr.net/npm/ionicons@7.4.0/dist/ionicons/ionicons.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="light">
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <ion-icon name="time-outline"></ion-icon>
+      </div>
+      <div>
+        <div class="brand-name">バイト管理</div>
+        <div class="brand-sub">Shift Manager</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="nav-item active" data-page="dashboard"><ion-icon name="grid-outline"></ion-icon>Dashboard</button>
+      <button class="nav-item" data-page="calendar"><ion-icon name="calendar-outline"></ion-icon>Calendar</button>
+      <button class="nav-item" data-page="shifts"><ion-icon name="briefcase-outline"></ion-icon>Shifts</button>
+      <button class="nav-item" data-page="jobs"><ion-icon name="business-outline"></ion-icon>Jobs</button>
+      <button class="nav-item" data-page="salary"><ion-icon name="wallet-outline"></ion-icon>Salary</button>
+      <button class="nav-item" data-page="analytics"><ion-icon name="analytics-outline"></ion-icon>Analytics</button>
+      <button class="nav-item" data-page="transport"><ion-icon name="bus-outline"></ion-icon>Transport</button>
+      <button class="nav-item" data-page="settings"><ion-icon name="settings-outline"></ion-icon>Settings</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="avatar">U</div>
+      <div class="user-info">
+        <div class="user-name">Rai</div>
+        <div class="user-role">Part-timer</div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <button class="icon-btn menu-toggle" id="menuToggle"><ion-icon name="menu-outline"></ion-icon></button>
+      </div>
+      <div style="flex:1">
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="page-sub" id="pageSub">Overview of your work and earnings</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="themeToggle" title="Toggle theme"><ion-icon name="moon-outline"></ion-icon></button>
+        <button class="btn btn-primary" id="quickAdd"><ion-icon name="add-outline"></ion-icon>New Shift</button>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <section class="page active" id="page-dashboard">
+      <div class="grid grid-4" id="statsGrid"></div>
+      <div style="height:16px"></div>
+      <div class="grid" style="grid-template-columns: 2fr 1fr; gap: 16px;" id="dashRow2">
+        <div class="card">
+          <div class="card-title">
+            <span>Monthly Goal Progress</span>
+            <span class="badge" id="goalBadge">—</span>
+          </div>
+          <div id="goalContent"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Upcoming Shifts</div>
+          <div id="upcomingList" class="list"></div>
+        </div>
+      </div>
+      <div style="height:16px"></div>
+      <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="card">
+          <div class="card-title">Smart Insights</div>
+          <div id="insightsList" class="list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Income Breakdown</div>
+          <canvas class="chart" id="dashBreakdownChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Calendar -->
+    <section class="page" id="page-calendar">
+      <div class="card">
+        <div class="cal-head">
+          <div class="cal-title" id="calTitle">September 2026</div>
+          <div class="cal-nav">
+            <button class="btn btn-secondary" id="calToday">Today</button>
+            <button class="icon-btn" id="calPrev"><ion-icon name="chevron-back-outline"></ion-icon></button>
+            <button class="icon-btn" id="calNext"><ion-icon name="chevron-forward-outline"></ion-icon></button>
+          </div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+    </section>
+
+    <!-- Shifts -->
+    <section class="page" id="page-shifts">
+      <div class="filter-bar" id="shiftFilter">
+        <button class="chip active" data-filter="all">All</button>
+        <button class="chip" data-filter="upcoming">Upcoming</button>
+        <button class="chip" data-filter="past">Past</button>
+      </div>
+      <div id="shiftList" class="list"></div>
+    </section>
+
+    <!-- Jobs -->
+    <section class="page" id="page-jobs">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="font-size:13px; color:var(--text-muted);">Manage your workplaces</div>
+        <button class="btn btn-primary" id="addJobBtn"><ion-icon name="add-outline"></ion-icon>Add Job</button>
+      </div>
+      <div class="grid grid-2" id="jobsList"></div>
+    </section>
+
+    <!-- Salary -->
+    <section class="page" id="page-salary">
+      <div class="grid grid-4" id="salaryStats"></div>
+      <div style="height:16px"></div>
+      <div class="card">
+        <div class="card-title">Earnings Breakdown</div>
+        <div id="salaryBreakdown"></div>
+      </div>
+    </section>
+
+    <!-- Analytics -->
+    <section class="page" id="page-analytics">
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-title">Weekly Income</div>
+          <canvas class="chart" id="weeklyIncomeChart"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-title">Working Hours</div>
+          <canvas class="chart" id="hoursChart"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-title">Income by Job</div>
+          <canvas class="chart" id="jobIncomeChart"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-title">Monthly Trend</div>
+          <canvas class="chart" id="trendChart"></canvas>
+        </div>
+      </div>
+      <div style="height:16px"></div>
+      <div class="card">
+        <div class="card-title">Statistics</div>
+        <div class="grid grid-3" id="statsList"></div>
+      </div>
+    </section>
+
+    <!-- Transport -->
+    <section class="page" id="page-transport">
+      <div class="grid grid-3" id="transportStats"></div>
+      <div style="height:16px"></div>
+      <div class="card">
+        <div class="card-title">Transportation by Job</div>
+        <div id="transportByJob"></div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section class="page" id="page-settings">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">General</div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Currency</div>
+            <div class="setting-desc">Display currency for earnings</div>
+          </div>
+          <select id="setCurrency" style="padding:8px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg);">
+            <option value="¥">¥ JPY</option>
+            <option value="$">$ USD</option>
+            <option value="€">€ EUR</option>
+            <option value="£">£ GBP</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Default Hourly Wage</div>
+            <div class="setting-desc">Used when creating new jobs</div>
+          </div>
+          <input type="number" id="setWage" style="width:120px; padding:8px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); text-align:right;">
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Default Break (min)</div>
+            <div class="setting-desc">Default break duration per shift</div>
+          </div>
+          <input type="number" id="setBreak" style="width:120px; padding:8px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); text-align:right;">
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Monthly Income Goal</div>
+            <div class="setting-desc">Your monthly target earnings</div>
+          </div>
+          <input type="number" id="setGoal" style="width:140px; padding:8px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); text-align:right;">
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Overtime</div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Enable Overtime</div>
+            <div class="setting-desc">Apply multiplier after regular hours</div>
+          </div>
+          <div class="toggle" id="setOtToggle"></div>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Regular Daily Hours</div>
+            <div class="setting-desc">Hours before overtime applies</div>
+          </div>
+          <input type="number" step="0.5" id="setRegHours" style="width:120px; padding:8px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); text-align:right;">
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Overtime Multiplier</div>
+            <div class="setting-desc">Pay rate for overtime hours</div>
+          </div>
+          <input type="number" step="0.05" id="setOtMult" style="width:120px; padding:8px 12px; border:1px solid var(--border); border-radius:8px; background:var(--bg); text-align:right;">
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Include Transportation</div>
+            <div class="setting-desc">Add transport cost to expected income</div>
+          </div>
+          <div class="toggle" id="setTransportToggle"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Appearance</div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Dark Mode</div>
+            <div class="setting-desc">Switch between light and dark theme</div>
+          </div>
+          <div class="toggle" id="setThemeToggle"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Data</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-secondary" id="exportBtn"><ion-icon name="download-outline"></ion-icon>Export JSON</button>
+          <button class="btn btn-secondary" id="importBtn"><ion-icon name="upload-outline"></ion-icon>Import JSON</button>
+          <input type="file" id="importFile" accept=".json" style="display:none;">
+          <button class="btn btn-danger" id="resetBtn"><ion-icon name="trash-outline"></ion-icon>Reset All Data</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Mobile Nav -->
+  <nav class="mobile-nav" id="mobileNav">
+    <button class="active" data-page="dashboard"><ion-icon name="grid-outline"></ion-icon>Home</button>
+    <button data-page="calendar"><ion-icon name="calendar-outline"></ion-icon>Cal</button>
+    <button data-page="shifts"><ion-icon name="briefcase-outline"></ion-icon>Shifts</button>
+    <button data-page="salary"><ion-icon name="wallet-outline"></ion-icon>Pay</button>
+    <button data-page="settings"><ion-icon name="settings-outline"></ion-icon>More</button>
+  </nav>
+</div>
+
+<!-- Shift Modal -->
+<div class="modal-backdrop" id="shiftModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="shiftModalTitle">New Shift</div>
+      <button class="icon-btn" data-close-modal><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="field">
+          <label>Job</label>
+          <select id="shiftJob"></select>
+        </div>
+        <div class="field">
+          <label>Date</label>
+          <input type="date" id="shiftDate">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Start Time</label>
+          <input type="time" id="shiftStart" value="09:00">
+        </div>
+        <div class="field">
+          <label>End Time</label>
+          <input type="time" id="shiftEnd" value="17:00">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Break (min)</label>
+          <input type="number" id="shiftBreak" value="60" min="0">
+        </div>
+        <div class="field">
+          <label>Hourly Wage</label>
+          <input type="number" id="shiftWage" value="1200" min="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Transportation</label>
+          <input type="number" id="shiftTransport" value="0" min="0">
+        </div>
+        <div class="field">
+          <label>Notes (optional)</label>
+          <input type="text" id="shiftNotes" placeholder="e.g. closing shift">
+        </div>
+      </div>
+      <div class="card" style="background:var(--primary-soft); border-color:transparent; padding:12px 14px;">
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);">
+          <span>Expected Earnings</span>
+          <strong id="shiftPreview" style="color:var(--primary); font-size:14px;">¥0</strong>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>Cancel</button>
+      <button class="btn btn-primary" id="saveShiftBtn">Save Shift</button>
+    </div>
+  </div>
+</div>
+
+<!-- Job Modal -->
+<div class="modal-backdrop" id="jobModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="jobModalTitle">New Job</div>
+      <button class="icon-btn" data-close-modal><ion-icon name="close-outline"></ion-icon></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="field">
+          <label>Job Name</label>
+          <input type="text" id="jobName" placeholder="e.g. Restaurant">
+        </div>
+        <div class="field">
+          <label>Company</label>
+          <input type="text" id="jobCompany" placeholder="e.g. Sakura Dining">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Default Hourly Wage</label>
+          <input type="number" id="jobWage" value="1200" min="0">
+        </div>
+        <div class="field">
+          <label>Default Transportation</label>
+          <input type="number" id="jobTransport" value="500" min="0">
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Color Label</label>
+        <div class="color-picker" id="colorPicker"></div>
+      </div>
+      <div class="field">
+        <label>Notes (optional)</label>
+        <textarea id="jobNotes" placeholder="Any notes about this job..."></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>Cancel</button>
+      <button class="btn btn-primary" id="saveJobBtn">Save Job</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
